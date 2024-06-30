@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableScheduling
 public class BobBogiSpringApplication {
-
+	int a;
 	public static void main(String[] args) {
 		SpringApplication.run(BobBogiSpringApplication.class, args);
 	}
