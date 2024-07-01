@@ -9,6 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 public class BobBogiSpringApplication {
 	int a;
 	int b;
+	int c;
 	public static void main(String[] args) {
 		SpringApplication.run(BobBogiSpringApplication.class, args);
 	}
