@@ -8,6 +8,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class BobBogiSpringApplication {
 	int a;
+	int b;
 	public static void main(String[] args) {
 		SpringApplication.run(BobBogiSpringApplication.class, args);
 	}
