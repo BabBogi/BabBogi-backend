@@ -1,13 +1,12 @@
 package BobBogi.BobBogispring.controller;
 
-import BobBogi.BobBogispring.domain.Consumption;
-import BobBogi.BobBogispring.domain.FcmToken;
-import BobBogi.BobBogispring.domain.RecommendationNutrition;
-import BobBogi.BobBogispring.domain.User;
+import BobBogi.BobBogispring.domain.*;
 import BobBogi.BobBogispring.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +21,15 @@ public class UserController {
     private final ConsumptionService consumptionService;
 
     private final NotificationService notificationService;
+
+    @Value("${openai.model}")
+    private String model;
+
+    @Value("${openai.api.url}")
+    private String apiURL;
+
+    @Autowired
+    private RestTemplate template;
 
     @Autowired
     public UserController(UserService userService, RecommendationService recommendationService, ConsumptionService consumptionService, NotificationService notificationService){
@@ -191,4 +199,11 @@ public class UserController {
         }
     }
 
+    @GetMapping("/chat")
+    @ResponseBody
+    public String chat(@RequestParam(name = "prompt")String prompt){
+        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+        ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
+        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+    }
 }
