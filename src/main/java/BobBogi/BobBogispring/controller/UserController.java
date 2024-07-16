@@ -2,12 +2,15 @@ package BobBogi.BobBogispring.controller;
 
 import BobBogi.BobBogispring.domain.*;
 import BobBogi.BobBogispring.service.*;
+import jakarta.persistence.Column;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -199,10 +202,109 @@ public class UserController {
         }
     }
 
-    @GetMapping("/chat")
+    @GetMapping("/dailyreport")
     @ResponseBody
-    public String chat(@RequestParam(name = "prompt")String prompt){
-        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+    public String dailyreport(@RequestParam(name = "id")Long id, @RequestParam(name = "date")String datestr){
+        LocalDate date = LocalDate.parse(datestr);
+        String RequestMessage;
+        List<Consumption> consumptionList;
+        Double kcal=0d;
+        Double carbohydrate=0d;
+        Double sugar=0d;
+        Double protein=0d;
+        Double fat=0d;
+        Double transfat=0d;
+        Double saturatedfat=0d;
+        Double cholesterol=0d;
+        Double natrium=0d;
+        consumptionList = consumptionService.getAllConsumptionsByUserIdOrdered(id,date);
+        if(consumptionList.isEmpty()){
+            return null;
+        }else{
+            for(int i=0; i<consumptionList.size(); i++){
+                kcal += consumptionList.get(i).getKcal();
+                carbohydrate += consumptionList.get(i).getCarbohydrate();
+                sugar += consumptionList.get(i).getSugar();
+                protein += consumptionList.get(i).getProtein();
+                fat += consumptionList.get(i).getFat();
+                transfat += consumptionList.get(i).getTransfat();
+                saturatedfat += consumptionList.get(i).getSaturatedfat();
+                cholesterol += consumptionList.get(i).getCholesterol();
+                natrium += consumptionList.get(i).getNatrium();
+            }
+        }
+        RequestMessage = "이 만큼의 영양소를 "+ datestr + "에 섭취했어 분석해줘";
+        ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
+        ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
+        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+    }
+
+    @GetMapping("/report")
+    @ResponseBody
+    public String report(@RequestParam(name = "id")Long id, @RequestParam(name = "enddate")String startdatestr, @RequestParam(name = "enddate")String enddatestr){
+        LocalDate startdate = LocalDate.parse(startdatestr);
+        LocalDate enddate = LocalDate.parse(enddatestr);
+        Long range = ChronoUnit.DAYS.between(startdate, enddate) + 1;
+        String RequestMessage;
+        List<List<Consumption>> consumptionLists = null;
+        Double kcal=0d;
+        Double carbohydrate=0d;
+        Double sugar=0d;
+        Double protein=0d;
+        Double fat=0d;
+        Double transfat=0d;
+        Double saturatedfat=0d;
+        Double cholesterol=0d;
+        Double natrium=0d;
+        List<Double> kcalList = null;
+        List<Double> carbohydrateList = null;
+        List<Double> sugarList = null;
+        List<Double> proteinList = null;
+        List<Double> fatList = null;
+        List<Double> transfatList = null;
+        List<Double> saturatedfatList = null;
+        List<Double> cholesterolList = null;
+        List<Double> natriumListList = null;
+        for(int i=0; i<range; i++){
+            consumptionLists.add(consumptionService.getAllConsumptionsByUserIdOrdered(id,startdate.plusDays(i)));
+        }
+        if(consumptionLists.size()==range){
+            return null;
+        }else{
+            for(int i=0; i<consumptionLists.size(); i++) {
+                for (int j = 0; j < consumptionLists.get(i).size(); j++) {
+                    kcal += consumptionLists.get(i).get(j).getKcal();
+                    carbohydrate += consumptionLists.get(i).get(j).getCarbohydrate();
+                    sugar += consumptionLists.get(i).get(j).getSugar();
+                    protein += consumptionLists.get(i).get(j).getProtein();
+                    fat += consumptionLists.get(i).get(j).getFat();
+                    transfat += consumptionLists.get(i).get(j).getTransfat();
+                    saturatedfat += consumptionLists.get(i).get(j).getSaturatedfat();
+                    cholesterol += consumptionLists.get(i).get(j).getCholesterol();
+                    natrium += consumptionLists.get(i).get(j).getNatrium();
+                }
+                kcalList.add(kcal);
+                carbohydrateList.add(carbohydrate);
+                sugarList.add(sugar);
+                proteinList.add(protein);
+                fatList.add(fat);
+                transfatList.add(transfat);
+                saturatedfatList.add(saturatedfat);
+                cholesterolList.add(cholesterol);
+                natriumListList.add(natrium);
+                kcal=0d;
+                carbohydrate=0d;
+                sugar=0d;
+                protein=0d;
+                fat=0d;
+                transfat=0d;
+                saturatedfat=0d;
+                cholesterol=0d;
+                natrium=0d;
+            }
+        }
+        RequestMessage = "이 만큼의 영양소를 "+ "" + "에 섭취했어 분석해줘";
+        ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         return chatGPTResponse.getChoices().get(0).getMessage().getContent();
     }
