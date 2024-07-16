@@ -208,6 +208,27 @@ public class UserController {
         LocalDate date = LocalDate.parse(datestr);
         String RequestMessage;
         List<Consumption> consumptionList;
+        List<User> result = userService.findOne(id);
+        User user = result.get(result.size()-1);
+        String userDisease="";
+        String userGender;
+
+        if(user.getGender().equals("M")){
+            userGender = "남";
+        }else{
+            userGender = "여";
+        }
+        if(user.getDisease().equals("null")) {
+            userDisease = "없음";
+        }else if(user.getDisease().equals("diabetes")) {
+            userDisease = "당뇨병";
+        }else if(user.getDisease().equals("highbloodpressure")) {
+            userDisease = "고혈압";
+        }
+        String.valueOf(user.getAge());
+        String.valueOf(user.getHeight());
+        String.valueOf(user.getWeight());
+
         Double kcal=0d;
         Double carbohydrate=0d;
         Double sugar=0d;
@@ -217,23 +238,39 @@ public class UserController {
         Double saturatedfat=0d;
         Double cholesterol=0d;
         Double natrium=0d;
+
         consumptionList = consumptionService.getAllConsumptionsByUserIdOrdered(id,date);
         if(consumptionList.isEmpty()){
             return null;
         }else{
             for(int i=0; i<consumptionList.size(); i++){
-                kcal += consumptionList.get(i).getKcal();
-                carbohydrate += consumptionList.get(i).getCarbohydrate();
-                sugar += consumptionList.get(i).getSugar();
-                protein += consumptionList.get(i).getProtein();
-                fat += consumptionList.get(i).getFat();
-                transfat += consumptionList.get(i).getTransfat();
-                saturatedfat += consumptionList.get(i).getSaturatedfat();
-                cholesterol += consumptionList.get(i).getCholesterol();
-                natrium += consumptionList.get(i).getNatrium();
+                kcal += consumptionList.get(i).getKcal()*consumptionList.get(i).getFoodCount();
+                carbohydrate += consumptionList.get(i).getCarbohydrate()*consumptionList.get(i).getFoodCount();
+                sugar += consumptionList.get(i).getSugar()*consumptionList.get(i).getFoodCount();
+                protein += consumptionList.get(i).getProtein()*consumptionList.get(i).getFoodCount();
+                fat += consumptionList.get(i).getFat()*consumptionList.get(i).getFoodCount();
+                transfat += consumptionList.get(i).getTransfat()*consumptionList.get(i).getFoodCount();
+                saturatedfat += consumptionList.get(i).getSaturatedfat()*consumptionList.get(i).getFoodCount();
+                cholesterol += consumptionList.get(i).getCholesterol()*consumptionList.get(i).getFoodCount();
+                natrium += consumptionList.get(i).getNatrium()*consumptionList.get(i).getFoodCount();
             }
         }
-        RequestMessage = "이 만큼의 영양소를 "+ datestr + "에 섭취했어 분석해줘";
+        RequestMessage = "성별: "+userGender+",\n"+
+                "나이: "+String.valueOf(user.getAge())+",\n"+
+                "키: "+String.valueOf(user.getHeight())+",\n"+
+                "몸무게: "+String.valueOf(user.getWeight())+",\n"+
+                "보유 성인병: "+userDisease+",\n"+
+                "섭취한 열량(단위: kcal): "+String.valueOf(kcal)+",\n"+
+                "섭취한 탄수화물의 양(단위: g): "+String.valueOf(carbohydrate)+",\n"+
+                "섭취한 당의 양(단위: g): "+String.valueOf(sugar)+",\n"+
+                "섭취한 단백질의 양(단위: g): "+String.valueOf(protein)+",\n"+
+                "섭취한 지방의 양(단위: g): "+String.valueOf(fat)+",\n"+
+                "섭취한 트랜스지방의 양(단위: g): "+String.valueOf(transfat)+",\n"+
+                "섭취한 포화지방의 양(단위: g): "+String.valueOf(saturatedfat)+",\n"+
+                "섭취한 콜레스테롤의 양(단위: mg): "+String.valueOf(cholesterol)+",\n"+
+                "섭취한 나트륨의 양(단위: mg): "+String.valueOf(natrium)+"\n"+
+                "앞의 내용은 나의 건강정보와 내가 하루 동안 섭취한 영양소의 양이야. 내가 하루동안 영양 섭취를 잘 했는지 평가해!";
+        System.out.println(RequestMessage);
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         return chatGPTResponse.getChoices().get(0).getMessage().getContent();
@@ -306,6 +343,7 @@ public class UserController {
         RequestMessage = "이 만큼의 영양소를 "+ "" + "에 섭취했어 분석해줘";
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
-        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        //return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        return "구현중입니다";
     }
 }
