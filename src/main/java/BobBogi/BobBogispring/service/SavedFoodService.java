@@ -14,17 +14,14 @@ public class SavedFoodService {
     @Autowired
     private SavedFoodRepository savedFoodRepository;
 
-    public List<String> getFoodNamesByName(String name) {
-        List<SavedFood> foods = savedFoodRepository.findByNameContaining(name);
-        if (foods.isEmpty()) {
-            return List.of("없음");
-        }
-        return foods.stream()
-                .map(SavedFood::getFoodname)
+    public List<String> getFoodNamesByNameAndCategory(String name, List<String> categories) {
+        return savedFoodRepository.findByFoodnameContainingAndFoodIn(name, categories)
+                .stream()
+                .map(food -> food.getFoodname().replaceAll("[\\r\\n]", "") + " - " + food.getCompanyname().replaceAll("[\\r\\n]", ""))
                 .collect(Collectors.toList());
     }
 
-    public SavedFood getFoodByName(String name) {
-        return savedFoodRepository.findByFoodname(name);
+    public SavedFood getFoodByName(String foodname) {
+        return savedFoodRepository.findByFoodname(foodname);
     }
 }

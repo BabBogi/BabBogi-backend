@@ -15,10 +15,10 @@ public class SavedFoodController {
     @Autowired
     private SavedFoodService savedFoodService;
 
-    // 음식 이름으로 검색하여 관련된 음식 이름 목록을 반환하는 API
+    // 음식 이름과 카테고리로 검색하여 관련된 음식 목록과 회사 이름을 반환하는 API
     @GetMapping("/search")
-    public List<String> searchFoodNames(@RequestParam String name) {
-        return savedFoodService.getFoodNamesByName(name);
+    public List<String> searchFoodNames(@RequestParam String name, @RequestParam List<String> categories) {
+        return savedFoodService.getFoodNamesByNameAndCategory(name, categories);
     }
 
     // 특정 음식의 영양소 정보를 반환하는 API

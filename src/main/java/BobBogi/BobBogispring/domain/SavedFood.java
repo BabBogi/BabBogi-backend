@@ -52,6 +52,9 @@ public class SavedFood {
     @Column(name = "transfat", nullable = true)
     private Double transfat;
 
+    @Column(name = "companyname", nullable = true)
+    private String companyname;
+
     // Getters and Setters
     public int getFoodnum() {
         return foodnum;
@@ -171,5 +174,13 @@ public class SavedFood {
 
     public void setTransfat(Double transfat) {
         this.transfat = transfat;
+    }
+
+    public String getCompanyname() {
+        return companyname;
+    }
+
+    public void setCompanyname(String companyname) {
+        this.companyname = companyname;
     }
 }
