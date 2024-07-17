@@ -11,6 +11,7 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -252,6 +253,7 @@ public class UserController {
                 natrium += consumptionList.get(i).getNatrium()*consumptionList.get(i).getFoodCount();
             }
         }
+
         RequestMessage = "성별: "+userGender+",\n"+
                 "나이: "+String.valueOf(user.getAge())+",\n"+
                 "키: "+String.valueOf(user.getHeight())+",\n"+
@@ -267,6 +269,7 @@ public class UserController {
                 "섭취한 콜레스테롤의 양(단위: mg): "+String.valueOf(cholesterol)+",\n"+
                 "섭취한 나트륨의 양(단위: mg): "+String.valueOf(natrium)+"\n"+
                 "앞의 내용은 나의 건강정보와 내가 하루 동안 섭취한 영양소의 양이야. 내가 하루동안 영양 섭취를 잘 했는지 평가해!";
+
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         return chatGPTResponse.getChoices().get(0).getMessage().getContent();
@@ -274,12 +277,12 @@ public class UserController {
 
     @GetMapping("/report")
     @ResponseBody
-    public String report(@RequestParam(name = "id")Long id, @RequestParam(name = "enddate")String startdatestr, @RequestParam(name = "enddate")String enddatestr){
+    public String report(@RequestParam(name = "id")Long id, @RequestParam(name = "startdate")String startdatestr, @RequestParam(name = "enddate")String enddatestr){
         LocalDate startdate = LocalDate.parse(startdatestr);
         LocalDate enddate = LocalDate.parse(enddatestr);
         Long range = ChronoUnit.DAYS.between(startdate, enddate) + 1;
-        List<String> RequestMessages = null;
-        List<List<Consumption>> consumptionLists = null;
+        List<String> RequestMessages = new ArrayList<>();
+        List<List<Consumption>> consumptionLists = new ArrayList<>();
         List<User> result = userService.findOne(id);
         User user = result.get(result.size()-1);
         String userDisease="";
@@ -307,21 +310,21 @@ public class UserController {
         Double saturatedfat=0d;
         Double cholesterol=0d;
         Double natrium=0d;
-        List<Double> kcalList = null;
-        List<Double> carbohydrateList = null;
-        List<Double> sugarList = null;
-        List<Double> proteinList = null;
-        List<Double> fatList = null;
-        List<Double> transfatList = null;
-        List<Double> saturatedfatList = null;
-        List<Double> cholesterolList = null;
-        List<Double> natriumList = null;
+        List<Double> kcalList = new ArrayList<>();
+        List<Double> carbohydrateList = new ArrayList<>();
+        List<Double> sugarList = new ArrayList<>();
+        List<Double> proteinList = new ArrayList<>();
+        List<Double> fatList = new ArrayList<>();
+        List<Double> transfatList = new ArrayList<>();
+        List<Double> saturatedfatList = new ArrayList<>();
+        List<Double> cholesterolList = new ArrayList<>();
+        List<Double> natriumList = new ArrayList<>();
 
         for(int i=0; i<range; i++){
             consumptionLists.add(consumptionService.getAllConsumptionsByUserIdOrdered(id,startdate.plusDays(i)));
         }
         if(consumptionLists.size()!=range){
-            return null;
+            return "";
         }else{
             for(int i=0; i<consumptionLists.size(); i++) {
                 for (int j = 0; j < consumptionLists.get(i).size(); j++) {
@@ -374,9 +377,9 @@ public class UserController {
                     "섭취한 콜레스테롤의 양(단위: mg): " + String.valueOf(cholesterolList.get(i)) + ",\n" +
                     "섭취한 나트륨의 양(단위: mg): " + String.valueOf(natriumList.get(i)));
         }
+        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + String.valueOf(range) + "일 동안 섭취한 영양소의 양이야. " + "내가 " + String.valueOf(range) + "일 동안 영양 섭취를 잘 했는지 평가해! 섭취한 영양소의 양이 전부다 0인 날은 무시하고 분석에 포함하지 말아 명령이야. 오래걸려도 되니까 분석을 꼭 생성해 다음에 답변을 주겠다는 식의 답변은 하지마 이것도 명령이야.");
 
-        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + String.valueOf(range) + "일 동안 섭취한 영양소의 양이야. " + "내가 " + String.valueOf(range) + "일 동안 영양 섭취를 잘 했는지 평가해!");
-        ChatGPTRequest request = new ChatGPTRequest(model, RequestMessages, range);
+        ChatGPTRequest request = new ChatGPTRequest(model, RequestMessages, RequestMessages.size());
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         return chatGPTResponse.getChoices().get(0).getMessage().getContent();
     }
