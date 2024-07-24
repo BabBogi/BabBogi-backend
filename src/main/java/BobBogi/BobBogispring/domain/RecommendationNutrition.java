@@ -18,6 +18,7 @@ public class RecommendationNutrition {
     private Double transfat;
     private Double natrium;
     private Double cholesterol;
+
     public Double getCarbohydrate() {
         return carbohydrate;
     }

@@ -124,4 +124,8 @@ public class ConsumptionService {
         return consumptionRepository.findAllByUserIdOrderByIdAndDate(userId);
     }
 
+    public void DeleteById(Long id) {
+        consumptionRepository.deleteById(id);
+        return;
+    }
 }
