@@ -7,10 +7,6 @@ import jakarta.persistence.*;
 public class SavedFood {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int foodnum;
-
-    @Column(name = "foodcode", nullable = true)
     private String foodcode;
 
     @Column(name = "foodname", nullable = true)
@@ -52,17 +48,15 @@ public class SavedFood {
     @Column(name = "transfat", nullable = true)
     private Double transfat;
 
+
+    @Column(name = "foodweight", nullable = true)
+    private Double foodweight;
+
+
     @Column(name = "companyname", nullable = true)
     private String companyname;
 
     // Getters and Setters
-    public int getFoodnum() {
-        return foodnum;
-    }
-
-    public void setFoodnum(int foodnum) {
-        this.foodnum = foodnum;
-    }
 
     public String getFoodcode() {
         return foodcode;
@@ -176,11 +170,11 @@ public class SavedFood {
         this.transfat = transfat;
     }
 
-    public String getCompanyname() {
-        return companyname;
-    }
+    public Double getFoodweight() { return foodweight;}
 
-    public void setCompanyname(String companyname) {
-        this.companyname = companyname;
-    }
+    public void setFoodweight(Double foodweight) { this.foodweight = foodweight;}
+
+    public String getCompanyname() {return companyname; }
+
+    public void setCompanyname(String companyname) {this.companyname = companyname;}
 }

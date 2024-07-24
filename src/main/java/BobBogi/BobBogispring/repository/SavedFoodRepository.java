@@ -10,4 +10,5 @@ import java.util.List;
 public interface SavedFoodRepository extends JpaRepository<SavedFood, Integer> {
     List<SavedFood> findByFoodnameContaining(String name);
     SavedFood findByFoodname(String foodname);
+    SavedFood findByFoodcode(String foodcode);
 }

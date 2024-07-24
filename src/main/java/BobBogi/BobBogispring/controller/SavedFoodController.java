@@ -24,7 +24,7 @@ public class SavedFoodController {
 
     // 특정 음식의 영양소 정보를 반환하는 API
     @GetMapping("/food")
-    public SavedFood getFoodDetails(@RequestParam String foodname) {
-        return savedFoodService.getFoodByName(foodname);
+    public SavedFood getFoodDetails(@RequestParam String foodcode) {
+        return savedFoodService.getFoodByCode(foodcode);
     }
 }
