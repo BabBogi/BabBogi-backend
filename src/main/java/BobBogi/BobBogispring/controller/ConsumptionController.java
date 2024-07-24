@@ -5,6 +5,7 @@ import BobBogi.BobBogispring.domain.FcmToken;
 import BobBogi.BobBogispring.service.ConsumptionService;
 import BobBogi.BobBogispring.service.NotificationService;
 import BobBogi.BobBogispring.repository.FcmTokenRepository;
+import org.hibernate.query.SelectionQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -39,9 +40,8 @@ public class ConsumptionController {
         }
         // 소비 항목을 저장하고 저장된 항목 리스트를 반환
         List<Consumption> savedConsumptions = consumptionService.saveAllConsumptions(consumptions);
-        
-        //userId로 token 값 string으로 가져오기
 
+        //userId로 token 값 string으로 가져오기
         Optional<FcmToken> fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
         if (fcmTokenOptional.isPresent()) {
             String token = fcmTokenOptional.get().getToken();
@@ -60,5 +60,11 @@ public class ConsumptionController {
         List<Consumption> consumptions = consumptionService.getAllConsumptionsByUserIdOrdered(userId, date);
         return ResponseEntity.ok(consumptions);
     }
-
+    
+    @DeleteMapping("/delete")
+    @ResponseBody
+    public void DeleteConsumption(@RequestParam("id") Long id) {
+        consumptionService.DeleteById(id);
+        return;
+    }
 }
