@@ -63,8 +63,12 @@ public class ConsumptionController {
     
     @DeleteMapping("/delete")
     @ResponseBody
-    public void DeleteConsumption(@RequestParam("id") Long id) {
-        consumptionService.DeleteById(id);
-        return;
+    public Boolean DeleteConsumption(@RequestParam("id") Long id) {
+        if(consumptionService.FindConsumptionById(id).get().getId()==id) {
+            consumptionService.DeleteById(id);
+            return true;
+        }else{
+            return false;
+        }
     }
 }

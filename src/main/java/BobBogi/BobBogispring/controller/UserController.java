@@ -10,9 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 import static java.lang.Math.round;
@@ -207,6 +209,7 @@ public class UserController {
     @ResponseBody
     public String dailyreport(@RequestParam(name = "id")Long id, @RequestParam(name = "date")String datestr){
         LocalDate date = LocalDate.parse(datestr);
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("(E)", Locale.KOREAN);
         String RequestMessage;
         List<Consumption> consumptionList;
         List<User> result = userService.findOne(id);
@@ -272,7 +275,7 @@ public class UserController {
 
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
-        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        return "설정 날짜: "+datestr+date.format(dayFormatter)+"\n\n"+chatGPTResponse.getChoices().get(0).getMessage().getContent();
     }
 
     @GetMapping("/report")
@@ -280,6 +283,8 @@ public class UserController {
     public String report(@RequestParam(name = "id")Long id, @RequestParam(name = "startdate")String startdatestr, @RequestParam(name = "enddate")String enddatestr){
         LocalDate startdate = LocalDate.parse(startdatestr);
         LocalDate enddate = LocalDate.parse(enddatestr);
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        DateTimeFormatter dayFormatter = DateTimeFormatter.ofPattern("(E)", Locale.KOREAN);
         Long range = ChronoUnit.DAYS.between(startdate, enddate) + 1;
         List<String> RequestMessages = new ArrayList<>();
         List<List<Consumption>> consumptionLists = new ArrayList<>();
@@ -360,13 +365,12 @@ public class UserController {
         }
 
         RequestMessages.add("성별: " + userGender + ",\n" +
-                "성별: " + userGender + ",\n" +
                 "나이: " + String.valueOf(user.getAge()) + ",\n" +
                 "키: " + String.valueOf(user.getHeight()) + ",\n" +
                 "몸무게: " + String.valueOf(user.getWeight()) + ",\n" +
                 "보유 성인병: " + userDisease);
         for(int i=0; i<range; i++) {
-            RequestMessages.add(String.valueOf(i+1)+"일차\n"+
+            RequestMessages.add(startdate.plusDays(i).format(dateFormatter)+startdate.plusDays(i).format(dayFormatter)+"\n"+
                     "섭취한 열량(단위: kcal): " + String.valueOf(kcalList.get(i)) + ",\n" +
                     "섭취한 탄수화물의 양(단위: g): " + String.valueOf(carbohydrateList.get(i)) + ",\n" +
                     "섭취한 당의 양(단위: g): " + String.valueOf(sugarList.get(i)) + ",\n" +
@@ -377,10 +381,10 @@ public class UserController {
                     "섭취한 콜레스테롤의 양(단위: mg): " + String.valueOf(cholesterolList.get(i)) + ",\n" +
                     "섭취한 나트륨의 양(단위: mg): " + String.valueOf(natriumList.get(i)));
         }
-        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + String.valueOf(range) + "일 동안 섭취한 영양소의 양이야. " + "내가 " + String.valueOf(range) + "일 동안 영양 섭취를 잘 했는지 분석해! 섭취한 영양소의 양이 전부다 0인 날은 무시하고 분석에 포함하지 말아 명령이야. 오래걸려도 되니까 분석을 꼭 생성해 다음에 답변을 주겠다는 식의 답변은 하지마 이것도 명령이야.");
+        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + String.valueOf(range) + "일 동안 섭취한 영양소의 양이야. " + "내가 " + String.valueOf(range) + "일 동안 영양 섭취를 잘 했는지 분석해! 섭취한 영양소의 양이 전부다 0인 날은 무시하고 분석에 포함하지 말아 명령이야. 오래걸려도 되니까 분석을 꼭 생성해 다음에 답변을 주겠다는 식의 답변은 하지마 명령이야.");
 
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessages, RequestMessages.size());
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
-        return chatGPTResponse.getChoices().get(0).getMessage().getContent();
+        return "설정 기간: "+startdatestr+startdate.format(dayFormatter)+" ~ "+enddatestr+enddate.format(dayFormatter)+"\n\n"+chatGPTResponse.getChoices().get(0).getMessage().getContent();
     }
 }

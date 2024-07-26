@@ -128,4 +128,8 @@ public class ConsumptionService {
         consumptionRepository.deleteById(id);
         return;
     }
+
+    public Optional<Consumption> FindConsumptionById(Long id) {
+        return consumptionRepository.findById(id);
+    }
 }
