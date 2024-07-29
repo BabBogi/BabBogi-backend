@@ -19,34 +19,37 @@ public class Consumption {
     private String foodName;
 
     @Column(name = "food_count")
-    private Long foodCount;
+    private Long foodCount = 1l;
+
+    @Column(name = "weight")
+    private Double weight = 0d;
 
     @Column(name = "kcal")
-    private Double kcal;
+    private Double kcal = 0d;
 
     @Column(name = "carbohydrate")
-    private Double carbohydrate;
+    private Double carbohydrate = 0d;
 
     @Column(name = "sugar")
-    private Double sugar;
+    private Double sugar = 0d;
 
     @Column(name = "protein")
-    private Double protein;
+    private Double protein = 0d;
 
     @Column(name = "fat")
-    private Double fat;
+    private Double fat = 0d;
 
     @Column(name = "transfat")
-    private Double transfat;
+    private Double transfat = 0d;
 
     @Column(name = "saturatedfat")
-    private Double saturatedfat;
+    private Double saturatedfat = 0d;
 
     @Column(name = "cholesterol")
-    private Double cholesterol;
+    private Double cholesterol = 0d;
 
     @Column(name = "natrium")
-    private Double natrium;
+    private Double natrium = 0d;
 
     @Column(name = "remaining_kcal")
     private Double remainingkcal;
@@ -78,7 +81,6 @@ public class Consumption {
     private LocalDateTime date;
 
     public Consumption(){
-
     }
 
     @PrePersist
@@ -271,5 +273,13 @@ public class Consumption {
 
     public void setRemainingkcal(Double remainingkcal) {
         this.remainingkcal = remainingkcal;
+    }
+
+    public Double getWeight() {
+        return weight;
+    }
+
+    public void setWeight(Double weight) {
+        this.weight = weight;
     }
 }
