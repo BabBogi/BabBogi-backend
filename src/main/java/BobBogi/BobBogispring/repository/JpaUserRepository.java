@@ -3,6 +3,7 @@ package BobBogi.BobBogispring.repository;
 import BobBogi.BobBogispring.domain.User;
 import jakarta.persistence.EntityManager;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public class JpaUserRepository implements UserRepository {
@@ -24,12 +25,16 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
-    public void update(Long id, User user) {
+    public void delete(Long id) {
+        User user = em.createQuery("select u from User u where u.key = :id", User.class).setParameter("id", id).getSingleResult();
+        em.remove(user);
         return;
     }
 
     @Override
-    public void delete(Long id) {
+    public void update(Long id, Double weight) {
+        User user = em.createQuery("select u from User u where u.key = :id", User.class).setParameter("id", id).getSingleResult();
+        user.setWeight(weight);
         return;
     }
 }
