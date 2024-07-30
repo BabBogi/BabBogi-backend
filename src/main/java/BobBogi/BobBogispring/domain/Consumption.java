@@ -78,7 +78,7 @@ public class Consumption {
     private Double remainingNatrium;
 
     @Column(name = "date", nullable = false)
-    private LocalDateTime date;
+    private String date;
 
     public Consumption(){
     }
@@ -88,7 +88,6 @@ public class Consumption {
         if (foodCount == null) {
             foodCount = 1L;
         }
-        date = LocalDateTime.now();
     }
 
     public Long getId() {
@@ -251,11 +250,11 @@ public class Consumption {
         this.remainingNatrium = remainingNatrium;
     }
 
-    public LocalDateTime getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(String date) {
         this.date = date;
     }
 

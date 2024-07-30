@@ -42,7 +42,6 @@ public class ConsumptionService {
         if (!lastConsumptionOpt.isPresent()) {
             throw new IllegalArgumentException("No previous consumption found for user id: " + consumptions.get(0).getUserId());
         }
-
         Consumption lastConsumption = lastConsumptionOpt.get();
 
         Double remainingKcal = lastConsumption.getRemainingkcal();
@@ -59,7 +58,6 @@ public class ConsumptionService {
             if (consumption.getFoodCount() == null) {
                 consumption.setFoodCount(1L);
             }
-
             // 남은 영양소 계산
             remainingKcal -= consumption.getKcal() * consumption.getFoodCount();
             remainingCarbohydrate -= consumption.getCarbohydrate() * consumption.getFoodCount();
@@ -81,12 +79,60 @@ public class ConsumptionService {
             consumption.setRemainingCholesterol(remainingCholesterol);
             consumption.setRemainingNatrium(remainingNatrium);
 
-            consumption.setDate(LocalDateTime.now());
+            consumption.setDate(String.valueOf(LocalDateTime.now()));
         }
 
         return consumptionRepository.saveAll(consumptions);
     }
 
+    public List<Consumption> insertAllConsumptions(List<Consumption> consumptions, String datestr) {
+        Optional<Consumption> lastConsumptionOpt = consumptionRepository.findTopByUserIdOrderByIdDesc(consumptions.get(0).getUserId());
+
+        if (!lastConsumptionOpt.isPresent()) {
+            throw new IllegalArgumentException("No previous consumption found for user id: " + consumptions.get(0).getUserId());
+        }
+        Consumption lastConsumption = lastConsumptionOpt.get();
+
+        Double remainingKcal = lastConsumption.getRemainingkcal();
+        Double remainingCarbohydrate = lastConsumption.getRemainingCarbohydrate();
+        Double remainingSugar = lastConsumption.getRemainingSugar();
+        Double remainingProtein = lastConsumption.getRemainingProtein();
+        Double remainingFat = lastConsumption.getRemainingFat();
+        Double remainingTransfat = lastConsumption.getRemainingTransfat();
+        Double remainingSaturatedfat = lastConsumption.getRemainingSaturatedfat();
+        Double remainingCholesterol = lastConsumption.getRemainingCholesterol();
+        Double remainingNatrium = lastConsumption.getRemainingNatrium();
+
+        for (Consumption consumption : consumptions) {
+            if (consumption.getFoodCount() == null) {
+                consumption.setFoodCount(1L);
+            }
+            // 남은 영양소 계산
+            remainingKcal -= consumption.getKcal() * consumption.getFoodCount();
+            remainingCarbohydrate -= consumption.getCarbohydrate() * consumption.getFoodCount();
+            remainingSugar -= consumption.getSugar() * consumption.getFoodCount();
+            remainingProtein -= consumption.getProtein() * consumption.getFoodCount();
+            remainingFat -= consumption.getFat() * consumption.getFoodCount();
+            remainingTransfat -= consumption.getTransfat() * consumption.getFoodCount();
+            remainingSaturatedfat -= consumption.getSaturatedfat() * consumption.getFoodCount();
+            remainingCholesterol -= consumption.getCholesterol() * consumption.getFoodCount();
+            remainingNatrium -= consumption.getNatrium() * consumption.getFoodCount();
+
+            consumption.setRemainingkcal(remainingKcal);
+            consumption.setRemainingCarbohydrate(remainingCarbohydrate);
+            consumption.setRemainingSugar(remainingSugar);
+            consumption.setRemainingProtein(remainingProtein);
+            consumption.setRemainingFat(remainingFat);
+            consumption.setRemainingTransfat(remainingTransfat);
+            consumption.setRemainingSaturatedfat(remainingSaturatedfat);
+            consumption.setRemainingCholesterol(remainingCholesterol);
+            consumption.setRemainingNatrium(remainingNatrium);
+
+            consumption.setDate(datestr);
+        }
+
+        return consumptionRepository.saveAll(consumptions);
+    }
 
     @Scheduled(cron = "0 0 0 * * *") // 초(0~59), 분(0~59), 시(0~23), 일(1~31), 월(1~12), 요일(0~6)
     public void addConsumptionEntry() {
@@ -110,7 +156,7 @@ public class ConsumptionService {
             consumption.setRemainingCholesterol(recommendedNutrition.getCholesterol());
             consumption.setRemainingNatrium(recommendedNutrition.getNatrium());
 
-            consumption.setDate(LocalDateTime.now());
+            consumption.setDate(String.valueOf(LocalDateTime.now()));
             consumptionRepository.save(consumption);
             logger.info("새로운 Consumption 엔트리 저장 완료 for userId: " + userId);
         }
