@@ -22,4 +22,14 @@ public class UserService {
     public void updateOne(Long id, User user) {
         return;
     }
+
+    public void DeleteUserWeight(Long id){
+        repository.delete(id);
+        return;
+    }
+
+    public void UpdateUserWeight(Long id, Double weight){
+        repository.update(id, weight);
+        return;
+    }
 }

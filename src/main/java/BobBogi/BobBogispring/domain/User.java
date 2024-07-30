@@ -4,9 +4,12 @@ import jakarta.persistence.*;
 
 @Entity
 public class User {
+    @Column(name = "id")
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long key;
+
+    @Column(name = "user_id")
     private Long id;
     //@Column(name = "name") 테이블의 콜럼 명과 변수 명이 다를 때만 명시해주면 된다. 같으면 굳이 쓸 필요 없음.
     private String name;

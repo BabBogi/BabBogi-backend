@@ -47,7 +47,26 @@ public class ConsumptionController {
             String token = fcmTokenOptional.get().getToken();
             notificationService.sendNotification(token);
         }
-        
+        return ResponseEntity.ok(savedConsumptions);
+    }
+
+    @PostMapping("/insert")
+    @ResponseBody
+    public ResponseEntity<List<Consumption>> InsertConsumptions(@RequestParam("userId") Long userId, @RequestParam("date") String datestr, @RequestBody List<Consumption> consumptions) {
+        // 각 소비 항목에 사용자 ID를 설정
+        for (Consumption consumption : consumptions) {
+            consumption.setUserId(userId);
+        }
+        // 소비 항목을 저장하고 저장된 항목 리스트를 반환
+        List<Consumption> savedConsumptions = consumptionService.insertAllConsumptions(consumptions, datestr);
+
+        //userId로 token 값 string으로 가져오기
+        Optional<FcmToken> fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
+        if (fcmTokenOptional.isPresent()) {
+            String token = fcmTokenOptional.get().getToken();
+            notificationService.sendNotification(token);
+        }
+
         return ResponseEntity.ok(savedConsumptions);
     }
 

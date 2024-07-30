@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -94,6 +95,8 @@ public class UserController {
             nutrition.setCholesterol(200D);
             nutrition.setNatrium(1000D);
         }
+        user.setDate(String.valueOf(LocalDateTime.now()));
+        initialvalue.setDate(String.valueOf(LocalDateTime.now()));
         if(user.getId()!= null){
             userService.join(user);
             List<Consumption> consumptions = consumptionService.getAllConsumptionsByUserIdOrdered(user.getId());
@@ -129,6 +132,7 @@ public class UserController {
         }else {
             fcmToken.setToken(token);
             userService.join(user);
+            user.setId(user.getKey());
             fcmToken.setUserId(user.getKey());
             notificationService.saveUserToken(fcmToken);
             nutrition.setId(user.getKey());
@@ -386,5 +390,19 @@ public class UserController {
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessages, RequestMessages.size());
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
         return "설정 기간: "+startdatestr+startdate.format(dayFormatter)+" ~ "+enddatestr+enddate.format(dayFormatter)+"\n\n"+chatGPTResponse.getChoices().get(0).getMessage().getContent();
+    }
+
+    @DeleteMapping("/deleteweight")
+    @ResponseBody
+    public void deleteweight(@RequestParam(name = "id")Long id){
+        userService.DeleteUserWeight(id);
+        return;
+    }
+
+    @PutMapping("/updateweight")
+    @ResponseBody
+    public void updateweight(@RequestParam(name = "id")Long id, @RequestParam(name = "weight")Double weight){
+        userService.UpdateUserWeight(id, weight);
+        return;
     }
 }

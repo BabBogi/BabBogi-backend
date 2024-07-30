@@ -7,6 +7,6 @@ import java.util.List;
 public interface UserRepository {
     void save(User user);
     List<User> findById(Long id);
-    void update(Long id, User user);
-    void delete(Long id);
+    public void update(Long id, Double weight);
+    public void delete(Long id);
 }
