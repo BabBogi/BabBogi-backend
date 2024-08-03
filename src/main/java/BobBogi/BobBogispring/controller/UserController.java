@@ -48,106 +48,23 @@ public class UserController {
 
     @PostMapping("User")
     @ResponseBody
-    public Long helloApi(@RequestParam String token, @RequestBody User user) {
-        RecommendationNutrition nutrition = new RecommendationNutrition();
+    public Long helloApi(@RequestParam String token, @RequestBody User user, @RequestParam boolean recommendation) {
+        RecommendationNutrition nutrition = RecommendationNutritionCalculator(user);
         FcmToken fcmToken = new FcmToken();
-        Consumption initialvalue = new Consumption();
-        Double BMR = 0D;
-        if(user.getGender().equals("M")){
-            BMR = (88.362+(13.397*user.getWeight())+(4.799*user.getHeight())-(user.getAge()*5.667))*1.35;
-        }else{
-            BMR = (447.593+(9.247*user.getWeight())+(3.098*user.getHeight())-(user.getAge()*4.339))*1.35;
-        }
-        BMR = (double)round(BMR);
-        Double Temp_carbo = (double) round((BMR*0.55)/4);
-        Double Temp_protein = (double) round(user.getWeight());
-        Double Temp_fat = (double) round((BMR*0.275)/9);
-        Double Temp_sugar = (double) round((BMR*0.1)/4);
-        Double Temp_satfat = (double) round((BMR*0.1)/9);
-        if(user.getDisease().equals("null")) {
-            nutrition.setKcal(BMR);
-            nutrition.setCarbohydrate(Temp_carbo);
-            nutrition.setSugar(Temp_sugar);
-            nutrition.setProtein(Temp_protein);
-            nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(1D);
-            nutrition.setSaturatedfat(Temp_satfat);
-            nutrition.setCholesterol(300D);
-            nutrition.setNatrium(2000D);
-        }else if(user.getDisease().equals("diabetes")){
-            nutrition.setKcal(BMR*0.7);
-            nutrition.setCarbohydrate(Temp_carbo);
-            nutrition.setSugar(Temp_sugar/4);
-            nutrition.setProtein(Temp_protein);
-            nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(0.5D);
-            nutrition.setSaturatedfat(Temp_satfat);
-            nutrition.setCholesterol(300D);
-            nutrition.setNatrium(2000D);
-        }else if(user.getDisease().equals("highbloodpressure")) {
-            nutrition.setKcal(BMR*0.7);
-            nutrition.setCarbohydrate(Temp_carbo);
-            nutrition.setSugar(Temp_sugar);
-            nutrition.setProtein(Temp_protein);
-            nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(0.5D);
-            nutrition.setSaturatedfat((double)round(BMR*0.005));
-            nutrition.setCholesterol(200D);
-            nutrition.setNatrium(1000D);
-        }
         user.setDate(String.valueOf(LocalDateTime.now()));
-        initialvalue.setDate(String.valueOf(LocalDateTime.now()));
+        userService.join(user);
         if(user.getId()!= null){
-            userService.join(user);
-            List<Consumption> consumptions = consumptionService.getAllConsumptionsByUserIdOrdered(user.getId());
-            if(consumptions.size()==1){
-                initialvalue.setUserId(user.getId());
-                initialvalue.setRemainingkcal(nutrition.getKcal());
-                initialvalue.setRemainingCarbohydrate(nutrition.getCarbohydrate());
-                initialvalue.setRemainingSugar(nutrition.getSugar());
-                initialvalue.setRemainingProtein(nutrition.getProtein());
-                initialvalue.setRemainingFat(nutrition.getFat());
-                initialvalue.setRemainingTransfat(nutrition.getTransfat());
-                initialvalue.setRemainingSaturatedfat(nutrition.getSaturatedfat());
-                initialvalue.setRemainingCholesterol(nutrition.getCholesterol());
-                initialvalue.setRemainingNatrium(nutrition.getNatrium());
-            }else{
-                Optional<RecommendationNutrition> temp = recommendationService.findOne(user.getId());
-                RecommendationNutrition first = temp.get();
-                Consumption last = consumptions.get(consumptions.size()-1);
-                initialvalue.setUserId(user.getId());
-                initialvalue.setRemainingkcal(nutrition.getKcal()-(first.getKcal()-last.getRemainingkcal()));
-                initialvalue.setRemainingCarbohydrate(nutrition.getCarbohydrate()-(first.getCarbohydrate()-last.getRemainingCarbohydrate()));
-                initialvalue.setRemainingSugar(nutrition.getSugar()-(first.getSugar()-last.getRemainingSugar()));
-                initialvalue.setRemainingProtein(nutrition.getProtein()-(first.getProtein()-last.getRemainingProtein()));
-                initialvalue.setRemainingFat(nutrition.getFat()-(first.getFat()-last.getRemainingFat()));
-                initialvalue.setRemainingTransfat(nutrition.getTransfat()-(first.getTransfat()-last.getRemainingTransfat()));
-                initialvalue.setRemainingSaturatedfat(nutrition.getSaturatedfat()-(first.getSaturatedfat()-last.getRemainingSaturatedfat()));
-                initialvalue.setRemainingCholesterol(nutrition.getCholesterol()-(first.getCholesterol()-last.getRemainingCholesterol()));
-                initialvalue.setRemainingNatrium(nutrition.getNatrium()-(first.getNatrium()-last.getRemainingNatrium()));
+            if(recommendation) {
+                recommendationService.updateOne(user.getId(), nutrition);
             }
-            recommendationService.updateOne(user.getId(), nutrition);
-            consumptionService.Initialnutrition(initialvalue);
             return user.getId();
         }else {
-            fcmToken.setToken(token);
-            userService.join(user);
             user.setId(user.getKey());
+            fcmToken.setToken(token);
             fcmToken.setUserId(user.getKey());
             notificationService.saveUserToken(fcmToken);
             nutrition.setId(user.getKey());
             recommendationService.SaveNutritionInfo(nutrition);
-            initialvalue.setUserId(user.getKey());
-            initialvalue.setRemainingkcal(nutrition.getKcal());
-            initialvalue.setRemainingCarbohydrate(nutrition.getCarbohydrate());
-            initialvalue.setRemainingSugar(nutrition.getSugar());
-            initialvalue.setRemainingProtein(nutrition.getProtein());
-            initialvalue.setRemainingFat(nutrition.getFat());
-            initialvalue.setRemainingTransfat(nutrition.getTransfat());
-            initialvalue.setRemainingSaturatedfat(nutrition.getSaturatedfat());
-            initialvalue.setRemainingCholesterol(nutrition.getCholesterol());
-            initialvalue.setRemainingNatrium(nutrition.getNatrium());
-            consumptionService.Initialnutrition(initialvalue);
             return user.getKey();
         }
     }
@@ -173,40 +90,7 @@ public class UserController {
     @PutMapping("User")
     @ResponseBody
     public RecommendationNutrition helloApi3(@RequestBody RecommendationNutrition UpdateNutrition) {
-        List<Consumption> consumptions = consumptionService.getAllConsumptionsByUserIdOrdered(UpdateNutrition.getId());
-        Consumption initialvalue = new Consumption();
-        if(consumptions.size()==1){
-            initialvalue.setUserId(UpdateNutrition.getId());
-            initialvalue.setRemainingkcal(UpdateNutrition.getKcal());
-            initialvalue.setRemainingCarbohydrate(UpdateNutrition.getCarbohydrate());
-            initialvalue.setRemainingSugar(UpdateNutrition.getSugar());
-            initialvalue.setRemainingProtein(UpdateNutrition.getProtein());
-            initialvalue.setRemainingFat(UpdateNutrition.getFat());
-            initialvalue.setRemainingTransfat(UpdateNutrition.getTransfat());
-            initialvalue.setRemainingSaturatedfat(UpdateNutrition.getSaturatedfat());
-            initialvalue.setRemainingCholesterol(UpdateNutrition.getCholesterol());
-            initialvalue.setRemainingNatrium(UpdateNutrition.getNatrium());
-        }else{
-            Optional<RecommendationNutrition> temp = recommendationService.findOne(UpdateNutrition.getId());
-            RecommendationNutrition first = temp.get();
-            Consumption last = consumptions.get(consumptions.size()-1);
-            initialvalue.setUserId(UpdateNutrition.getId());
-            initialvalue.setRemainingkcal(UpdateNutrition.getKcal()-(first.getKcal()-last.getRemainingkcal()));
-            initialvalue.setRemainingCarbohydrate(UpdateNutrition.getCarbohydrate()-(first.getCarbohydrate()-last.getRemainingCarbohydrate()));
-            initialvalue.setRemainingSugar(UpdateNutrition.getSugar()-(first.getSugar()-last.getRemainingSugar()));
-            initialvalue.setRemainingProtein(UpdateNutrition.getProtein()-(first.getProtein()-last.getRemainingProtein()));
-            initialvalue.setRemainingFat(UpdateNutrition.getFat()-(first.getFat()-last.getRemainingFat()));
-            initialvalue.setRemainingTransfat(UpdateNutrition.getTransfat()-(first.getTransfat()-last.getRemainingTransfat()));
-            initialvalue.setRemainingSaturatedfat(UpdateNutrition.getSaturatedfat()-(first.getSaturatedfat()-last.getRemainingSaturatedfat()));
-            initialvalue.setRemainingCholesterol(UpdateNutrition.getCholesterol()-(first.getCholesterol()-last.getRemainingCholesterol()));
-            initialvalue.setRemainingNatrium(UpdateNutrition.getNatrium()-(first.getNatrium()-last.getRemainingNatrium()));
-        }
-        if(recommendationService.updateOne(UpdateNutrition.getId(), UpdateNutrition).isPresent()){
-            consumptionService.Initialnutrition(initialvalue);
-            return recommendationService.updateOne(UpdateNutrition.getId(), UpdateNutrition).get();
-        }else{
-            return null;
-        }
+        return recommendationService.updateOne(UpdateNutrition.getId(), UpdateNutrition).get();
     }
 
     @GetMapping("/dailyreport")
@@ -262,19 +146,19 @@ public class UserController {
         }
 
         RequestMessage = "성별: "+userGender+",\n"+
-                "나이: "+String.valueOf(user.getAge())+",\n"+
-                "키: "+String.valueOf(user.getHeight())+",\n"+
-                "몸무게: "+String.valueOf(user.getWeight())+",\n"+
+                "나이: "+ user.getAge() +",\n"+
+                "키: "+ user.getHeight() +",\n"+
+                "몸무게: "+ user.getWeight() +",\n"+
                 "보유 성인병: "+userDisease+",\n"+
-                "섭취한 열량(단위: kcal): "+String.valueOf(kcal)+",\n"+
-                "섭취한 탄수화물의 양(단위: g): "+String.valueOf(carbohydrate)+",\n"+
-                "섭취한 당의 양(단위: g): "+String.valueOf(sugar)+",\n"+
-                "섭취한 단백질의 양(단위: g): "+String.valueOf(protein)+",\n"+
-                "섭취한 지방의 양(단위: g): "+String.valueOf(fat)+",\n"+
-                "섭취한 트랜스지방의 양(단위: g): "+String.valueOf(transfat)+",\n"+
-                "섭취한 포화지방의 양(단위: g): "+String.valueOf(saturatedfat)+",\n"+
-                "섭취한 콜레스테롤의 양(단위: mg): "+String.valueOf(cholesterol)+",\n"+
-                "섭취한 나트륨의 양(단위: mg): "+String.valueOf(natrium)+"\n"+
+                "섭취한 열량(단위: kcal): "+ kcal +",\n"+
+                "섭취한 탄수화물의 양(단위: g): "+ carbohydrate +",\n"+
+                "섭취한 당의 양(단위: g): "+ sugar +",\n"+
+                "섭취한 단백질의 양(단위: g): "+ protein +",\n"+
+                "섭취한 지방의 양(단위: g): "+ fat +",\n"+
+                "섭취한 트랜스지방의 양(단위: g): "+ transfat +",\n"+
+                "섭취한 포화지방의 양(단위: g): "+ saturatedfat +",\n"+
+                "섭취한 콜레스테롤의 양(단위: mg): "+ cholesterol +",\n"+
+                "섭취한 나트륨의 양(단위: mg): "+ natrium +"\n"+
                 "앞의 내용은 나의 건강정보와 내가 하루 동안 섭취한 영양소의 양이야. 내가 하루동안 영양 섭취를 잘 했는지 평가해!";
 
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessage);
@@ -369,23 +253,23 @@ public class UserController {
         }
 
         RequestMessages.add("성별: " + userGender + ",\n" +
-                "나이: " + String.valueOf(user.getAge()) + ",\n" +
-                "키: " + String.valueOf(user.getHeight()) + ",\n" +
-                "몸무게: " + String.valueOf(user.getWeight()) + ",\n" +
+                "나이: " + user.getAge() + ",\n" +
+                "키: " + user.getHeight() + ",\n" +
+                "몸무게: " + user.getWeight() + ",\n" +
                 "보유 성인병: " + userDisease);
         for(int i=0; i<range; i++) {
             RequestMessages.add(startdate.plusDays(i).format(dateFormatter)+startdate.plusDays(i).format(dayFormatter)+"\n"+
-                    "섭취한 열량(단위: kcal): " + String.valueOf(kcalList.get(i)) + ",\n" +
-                    "섭취한 탄수화물의 양(단위: g): " + String.valueOf(carbohydrateList.get(i)) + ",\n" +
-                    "섭취한 당의 양(단위: g): " + String.valueOf(sugarList.get(i)) + ",\n" +
-                    "섭취한 단백질의 양(단위: g): " + String.valueOf(proteinList.get(i)) + ",\n" +
-                    "섭취한 지방의 양(단위: g): " + String.valueOf(fatList.get(i)) + ",\n" +
-                    "섭취한 트랜스지방의 양(단위: g): " + String.valueOf(transfatList.get(i)) + ",\n" +
-                    "섭취한 포화지방의 양(단위: g): " + String.valueOf(saturatedfatList.get(i)) + ",\n" +
-                    "섭취한 콜레스테롤의 양(단위: mg): " + String.valueOf(cholesterolList.get(i)) + ",\n" +
-                    "섭취한 나트륨의 양(단위: mg): " + String.valueOf(natriumList.get(i)));
+                    "섭취한 열량(단위: kcal): " + kcalList.get(i) + ",\n" +
+                    "섭취한 탄수화물의 양(단위: g): " + carbohydrateList.get(i) + ",\n" +
+                    "섭취한 당의 양(단위: g): " + sugarList.get(i) + ",\n" +
+                    "섭취한 단백질의 양(단위: g): " + proteinList.get(i) + ",\n" +
+                    "섭취한 지방의 양(단위: g): " + fatList.get(i) + ",\n" +
+                    "섭취한 트랜스지방의 양(단위: g): " + transfatList.get(i) + ",\n" +
+                    "섭취한 포화지방의 양(단위: g): " + saturatedfatList.get(i) + ",\n" +
+                    "섭취한 콜레스테롤의 양(단위: mg): " + cholesterolList.get(i) + ",\n" +
+                    "섭취한 나트륨의 양(단위: mg): " + natriumList.get(i));
         }
-        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + String.valueOf(range) + "일 동안 섭취한 영양소의 양이야. " + "내가 " + String.valueOf(range) + "일 동안 영양 섭취를 잘 했는지 분석해! 섭취한 영양소의 양이 전부다 0인 날은 무시하고 분석에 포함하지 말아 명령이야. 오래걸려도 되니까 분석을 꼭 생성해 다음에 답변을 주겠다는 식의 답변은 하지마 명령이야.");
+        RequestMessages.add("앞의 내용은 나의 건강정보와 내가 " + range + "일 동안 섭취한 영양소의 양이야. " + "내가 " + range + "일 동안 영양 섭취를 잘 했는지 분석해! 섭취한 영양소의 양이 전부다 0인 날은 무시하고 분석에 포함하지 말아 명령이야. 오래걸려도 되니까 분석을 꼭 생성해 다음에 답변을 주겠다는 식의 답변은 하지마 명령이야.");
 
         ChatGPTRequest request = new ChatGPTRequest(model, RequestMessages, RequestMessages.size());
         ChatGPTResponse chatGPTResponse =  template.postForObject(apiURL, request, ChatGPTResponse.class);
@@ -394,15 +278,75 @@ public class UserController {
 
     @DeleteMapping("/deleteweight")
     @ResponseBody
-    public void deleteweight(@RequestParam(name = "id")Long id){
-        userService.DeleteUserWeight(id);
-        return;
+    public void deleteweight(@RequestParam(name = "id")Long id, @RequestParam(name = "recommendation")boolean recommendation){
+        Long userId = userService.DeleteUserWeight(id);
+        List<User> user = userService.findOne(userId);
+        int size = user.size();
+        if(user.get(size-1).getKey()<id && recommendation){
+            RecommendationNutrition nutrition = RecommendationNutritionCalculator(user.get(size-1));
+            recommendationService.updateOne(userId, nutrition);
+        }
     }
 
     @PutMapping("/updateweight")
     @ResponseBody
-    public void updateweight(@RequestParam(name = "id")Long id, @RequestParam(name = "weight")Double weight){
-        userService.UpdateUserWeight(id, weight);
-        return;
+    public void updateweight(@RequestParam(name = "id")Long id, @RequestParam(name = "weight")Double weight, @RequestParam(name = "recommendation")boolean recommendation){
+        Long userId = userService.UpdateUserWeight(id, weight);
+        List<User> user = userService.findOne(userId);
+        int size = user.size();
+        System.out.println(user.get(size-1).getKey());
+        System.out.println(id);
+        if(user.get(size - 1).getKey().equals(id) && recommendation){
+            RecommendationNutrition nutrition = RecommendationNutritionCalculator(user.get(size-1));
+            recommendationService.updateOne(userId, nutrition);
+        }
+    }
+
+    private RecommendationNutrition RecommendationNutritionCalculator(User user){
+        RecommendationNutrition nutrition = new RecommendationNutrition();
+        Double BMR = 0D;
+        if(user.getGender().equals("M")){
+            BMR = (88.362+(13.397*user.getWeight())+(4.799*user.getHeight())-(user.getAge()*5.667))*1.35;
+        }else{
+            BMR = (447.593+(9.247*user.getWeight())+(3.098*user.getHeight())-(user.getAge()*4.339))*1.35;
+        }
+        BMR = (double)round(BMR);
+        Double Temp_carbo = (double) round((BMR*0.55)/4);
+        Double Temp_protein = (double) round(user.getWeight());
+        Double Temp_fat = (double) round((BMR*0.275)/9);
+        Double Temp_sugar = (double) round((BMR*0.1)/4);
+        Double Temp_satfat = (double) round((BMR*0.1)/9);
+        if(user.getDisease().equals("null")) {
+            nutrition.setKcal(BMR);
+            nutrition.setCarbohydrate(Temp_carbo);
+            nutrition.setSugar(Temp_sugar);
+            nutrition.setProtein(Temp_protein);
+            nutrition.setFat(Temp_fat);
+            nutrition.setTransfat(1D);
+            nutrition.setSaturatedfat(Temp_satfat);
+            nutrition.setCholesterol(300D);
+            nutrition.setNatrium(2000D);
+        }else if(user.getDisease().equals("diabetes")){
+            nutrition.setKcal(BMR*0.7);
+            nutrition.setCarbohydrate(Temp_carbo);
+            nutrition.setSugar(Temp_sugar/4);
+            nutrition.setProtein(Temp_protein);
+            nutrition.setFat(Temp_fat);
+            nutrition.setTransfat(0.5D);
+            nutrition.setSaturatedfat(Temp_satfat);
+            nutrition.setCholesterol(300D);
+            nutrition.setNatrium(2000D);
+        }else if(user.getDisease().equals("highbloodpressure")) {
+            nutrition.setKcal(BMR*0.7);
+            nutrition.setCarbohydrate(Temp_carbo);
+            nutrition.setSugar(Temp_sugar);
+            nutrition.setProtein(Temp_protein);
+            nutrition.setFat(Temp_fat);
+            nutrition.setTransfat(0.5D);
+            nutrition.setSaturatedfat((double)round(BMR*0.005));
+            nutrition.setCholesterol(200D);
+            nutrition.setNatrium(1000D);
+        }
+        return nutrition;
     }
 }

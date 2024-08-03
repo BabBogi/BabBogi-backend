@@ -19,7 +19,7 @@ public class Consumption {
     private String foodName;
 
     @Column(name = "food_count")
-    private Long foodCount = 1l;
+    private Double foodCount = 1d;
 
     @Column(name = "weight")
     private Double weight = 0d;
@@ -51,32 +51,6 @@ public class Consumption {
     @Column(name = "natrium")
     private Double natrium = 0d;
 
-    @Column(name = "remaining_kcal")
-    private Double remainingkcal;
-    @Column(name = "remaining_carbohydrate")
-    private Double remainingCarbohydrate;
-
-    @Column(name = "remaining_sugar")
-    private Double remainingSugar;
-
-    @Column(name = "remaining_protein")
-    private Double remainingProtein;
-
-    @Column(name = "remaining_fat")
-    private Double remainingFat;
-
-    @Column(name = "remaining_transfat")
-    private Double remainingTransfat;
-
-    @Column(name = "remaining_saturatedfat")
-    private Double remainingSaturatedfat;
-
-    @Column(name = "remaining_cholesterol")
-    private Double remainingCholesterol;
-
-    @Column(name = "remaining_natrium")
-    private Double remainingNatrium;
-
     @Column(name = "date", nullable = false)
     private String date;
 
@@ -86,7 +60,7 @@ public class Consumption {
     @PrePersist
     protected void onCreate() {
         if (foodCount == null) {
-            foodCount = 1L;
+            foodCount = 1d;
         }
     }
 
@@ -114,11 +88,11 @@ public class Consumption {
         this.foodName = foodName;
     }
 
-    public Long getFoodCount() {
+    public Double getFoodCount() {
         return foodCount;
     }
 
-    public void setFoodCount(Long foodCount) {
+    public void setFoodCount(Double foodCount) {
         this.foodCount = foodCount;
     }
 
@@ -186,70 +160,6 @@ public class Consumption {
         this.natrium = natrium;
     }
 
-    public Double getRemainingCarbohydrate() {
-        return remainingCarbohydrate;
-    }
-
-    public void setRemainingCarbohydrate(Double remainingCarbohydrate) {
-        this.remainingCarbohydrate = remainingCarbohydrate;
-    }
-
-    public Double getRemainingSugar() {
-        return remainingSugar;
-    }
-
-    public void setRemainingSugar(Double remainingSugar) {
-        this.remainingSugar = remainingSugar;
-    }
-
-    public Double getRemainingProtein() {
-        return remainingProtein;
-    }
-
-    public void setRemainingProtein(Double remainingProtein) {
-        this.remainingProtein = remainingProtein;
-    }
-
-    public Double getRemainingFat() {
-        return remainingFat;
-    }
-
-    public void setRemainingFat(Double remainingFat) {
-        this.remainingFat = remainingFat;
-    }
-
-    public Double getRemainingTransfat() {
-        return remainingTransfat;
-    }
-
-    public void setRemainingTransfat(Double remainingTransfat) {
-        this.remainingTransfat = remainingTransfat;
-    }
-
-    public Double getRemainingSaturatedfat() {
-        return remainingSaturatedfat;
-    }
-
-    public void setRemainingSaturatedfat(Double remainingSaturatedfat) {
-        this.remainingSaturatedfat = remainingSaturatedfat;
-    }
-
-    public Double getRemainingCholesterol() {
-        return remainingCholesterol;
-    }
-
-    public void setRemainingCholesterol(Double remainingCholesterol) {
-        this.remainingCholesterol = remainingCholesterol;
-    }
-
-    public Double getRemainingNatrium() {
-        return remainingNatrium;
-    }
-
-    public void setRemainingNatrium(Double remainingNatrium) {
-        this.remainingNatrium = remainingNatrium;
-    }
-
     public String getDate() {
         return date;
     }
@@ -264,14 +174,6 @@ public class Consumption {
 
     public void setKcal(Double kcal) {
         this.kcal = kcal;
-    }
-
-    public Double getRemainingkcal() {
-        return remainingkcal;
-    }
-
-    public void setRemainingkcal(Double remainingkcal) {
-        this.remainingkcal = remainingkcal;
     }
 
     public Double getWeight() {

@@ -20,21 +20,22 @@ public class JpaUserRepository implements UserRepository {
 
     @Override
     public List<User> findById(Long id) {
-        List<User> result = em.createQuery("select u.id,u.name,u.height,u.weight,u.age,u.gender,u.disease,u.date from User u where u.id = :id", User.class).setParameter("id", id).getResultList();
+        List<User> result = em.createQuery("select u from User u where u.id = :id", User.class).setParameter("id", id).getResultList();
         return result;
     }
 
     @Override
-    public void delete(Long id) {
+    public Long delete(Long id) {
         User user = em.createQuery("select u from User u where u.key = :id", User.class).setParameter("id", id).getSingleResult();
+        Long userId = user.getId();
         em.remove(user);
-        return;
+        return userId;
     }
 
     @Override
-    public void update(Long id, Double weight) {
+    public Long update(Long id, Double weight) {
         User user = em.createQuery("select u from User u where u.key = :id", User.class).setParameter("id", id).getSingleResult();
         user.setWeight(weight);
-        return;
+        return user.getId();
     }
 }

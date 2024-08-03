@@ -10,6 +10,7 @@ import BobBogi.BobBogispring.repository.RecommendationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,7 +24,7 @@ public class NotificationService {
     private FcmService fcmService;
 
     @Autowired
-    private ConsumptionRepository remainingIntakeRepository;
+    private ConsumptionRepository ConsumptionIntakeRepository;
 
     @Autowired
     private RecommendationRepository recommendedIntakeRepository;
@@ -32,23 +33,43 @@ public class NotificationService {
         FcmToken fcmToken = fcmTokenRepository.findByToken(token).get();
         Long userId = fcmToken.getUserId();
 
-        // get the latest remaining intake and recommended intake information
-        Optional<Consumption> remainingIntake = remainingIntakeRepository.findTopByUserIdOrderByIdDesc(userId);
+        List<Consumption> consumptions = ConsumptionIntakeRepository.findAllByUserIdOrderByIdAndDate(userId, LocalDate.now());
         Optional<RecommendationNutrition> recommendedIntake = recommendedIntakeRepository.findById(userId);
 
-        if (remainingIntake.isPresent() && recommendedIntake.isPresent()) {
-            Consumption remainingIntakeObj = remainingIntake.get();
+        if (!consumptions.isEmpty() && recommendedIntake.isPresent()) {
             RecommendationNutrition recommendedIntakeObj = recommendedIntake.get();
 
-            double kcalPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingkcal(), recommendedIntakeObj.getKcal());
-            double carbohydratePercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingCarbohydrate(), recommendedIntakeObj.getCarbohydrate());
-            double sugarPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingSugar(), recommendedIntakeObj.getSugar());
-            double proteinPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingProtein(), recommendedIntakeObj.getProtein());
-            double fatPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingFat(), recommendedIntakeObj.getFat());
-            double saturatedFatPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingSaturatedfat(), recommendedIntakeObj.getSaturatedfat());
-            double transFatPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingTransfat(), recommendedIntakeObj.getTransfat());
-            double natriumPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingNatrium(), recommendedIntakeObj.getNatrium());
-            double cholesterolPercentage = calculateIntakePercentage(remainingIntakeObj.getRemainingCholesterol(), recommendedIntakeObj.getCholesterol());
+            double kcal = 0d;
+            double carbohydrate = 0d;
+            double sugar = 0d;
+            double protein = 0d;
+            double fat = 0d;
+            double saturatedFat = 0d;
+            double transFat = 0d;
+            double natrium = 0d;
+            double cholesterol = 0d;
+
+            for(Consumption consumption:consumptions){
+                kcal+=consumption.getKcal();
+                carbohydrate+=consumption.getCarbohydrate();
+                sugar+=consumption.getSugar();
+                protein+=consumption.getProtein();
+                fat+=consumption.getFat();
+                saturatedFat+=consumption.getSaturatedfat();
+                transFat+=consumption.getTransfat();
+                natrium+=consumption.getNatrium();
+                cholesterol+=consumption.getCholesterol();
+            }
+
+            double kcalPercentage = kcal/recommendedIntakeObj.getKcal();
+            double carbohydratePercentage = carbohydrate/recommendedIntakeObj.getCarbohydrate();
+            double sugarPercentage = sugar/recommendedIntakeObj.getSugar();
+            double proteinPercentage = protein/recommendedIntakeObj.getProtein();
+            double fatPercentage = fat/recommendedIntakeObj.getFat();
+            double saturatedFatPercentage = saturatedFat/recommendedIntakeObj.getSaturatedfat();
+            double transFatPercentage = transFat/recommendedIntakeObj.getTransfat();
+            double natriumPercentage = natrium/recommendedIntakeObj.getNatrium();
+            double cholesterolPercentage = cholesterol/recommendedIntakeObj.getCholesterol();
 
             checkAndSendNotification(token,"Kcal", kcalPercentage);
             checkAndSendNotification(token, "carbohydrate", carbohydratePercentage);
@@ -62,7 +83,6 @@ public class NotificationService {
         } else {
             System.out.println("Remaining or recommended intake information not found for user: " + userId);
         }
-
     }
 
     private double calculateIntakePercentage(double remaining, double recommended) {
