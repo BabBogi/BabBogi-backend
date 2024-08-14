@@ -61,11 +61,11 @@ public class ConsumptionController {
         List<Consumption> savedConsumptions = consumptionService.insertAllConsumptions(consumptions, datestr);
 
         //userId로 token 값 string으로 가져오기
-        Optional<FcmToken> fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
-        if (fcmTokenOptional.isPresent()) {
-            String token = fcmTokenOptional.get().getToken();
-            notificationService.sendNotification(token);
-        }
+//        Optional<FcmToken> fcmTokenOptional = fcmTokenRepository.findByUserId(userId);
+//        if (fcmTokenOptional.isPresent()) {
+//            String token = fcmTokenOptional.get().getToken();
+//            notificationService.sendNotification(token);
+//        }
 
         return ResponseEntity.ok(savedConsumptions);
     }

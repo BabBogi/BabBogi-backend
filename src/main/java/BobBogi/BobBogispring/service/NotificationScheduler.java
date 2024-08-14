@@ -21,7 +21,7 @@ public class NotificationScheduler {
     public void sendDailyNotifications() {
         List<FcmToken> tokens = fcmTokenRepository.findAll();
         for (FcmToken token : tokens) {
-            fcmService.sendNotification(token.getToken(), "일일 초기화 알림",  "오늘도 건강한 하루 되세요!");
+            fcmService.sendNotification(token.getToken(), "일일 초기화 알림",  "하루가 지나 모든 영양소의 섭취량이 0으로 초기화 되었습니다! 오늘도 건강한 하루 되세요!");
         }
     }
 }

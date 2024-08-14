@@ -25,11 +25,10 @@ public class JpaUserRepository implements UserRepository {
     }
 
     @Override
-    public Long delete(Long id) {
+    public User delete(Long id) {
         User user = em.createQuery("select u from User u where u.key = :id", User.class).setParameter("id", id).getSingleResult();
-        Long userId = user.getId();
         em.remove(user);
-        return userId;
+        return user;
     }
 
     @Override

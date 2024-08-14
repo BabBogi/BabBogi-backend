@@ -23,7 +23,7 @@ public class UserService {
         return;
     }
 
-    public Long DeleteUserWeight(Long id){
+    public User DeleteUserWeight(Long id){
         return repository.delete(id);
     }
 

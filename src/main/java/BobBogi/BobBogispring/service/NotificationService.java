@@ -71,15 +71,15 @@ public class NotificationService {
             double natriumPercentage = natrium/recommendedIntakeObj.getNatrium();
             double cholesterolPercentage = cholesterol/recommendedIntakeObj.getCholesterol();
 
-            checkAndSendNotification(token,"Kcal", kcalPercentage);
-            checkAndSendNotification(token, "carbohydrate", carbohydratePercentage);
-            checkAndSendNotification(token, "sugar", sugarPercentage);
-            checkAndSendNotification(token, "protein", proteinPercentage);
-            checkAndSendNotification(token, "fat", fatPercentage);
-            checkAndSendNotification(token, "saturated fat", saturatedFatPercentage);
-            checkAndSendNotification(token, "trans fat", transFatPercentage);
-            checkAndSendNotification(token, "natrium", natriumPercentage);
-            checkAndSendNotification(token, "cholesterol", cholesterolPercentage);
+            checkAndSendNotification(token,"열량", kcalPercentage);
+            checkAndSendNotification(token, "탄수화물", carbohydratePercentage);
+            checkAndSendNotification(token, "당", sugarPercentage);
+            checkAndSendNotification(token, "단백질", proteinPercentage);
+            checkAndSendNotification(token, "지방", fatPercentage);
+            checkAndSendNotification(token, "포화지방", saturatedFatPercentage);
+            checkAndSendNotification(token, "트랜스지방", transFatPercentage);
+            checkAndSendNotification(token, "나트륨", natriumPercentage);
+            checkAndSendNotification(token, "콜레스테롤", cholesterolPercentage);
         } else {
             System.out.println("Remaining or recommended intake information not found for user: " + userId);
         }
@@ -94,17 +94,17 @@ public class NotificationService {
         String body;
 
         if (intakePercentage > 1.0) {
-            title = "위험";
-            body = "지금 " + nutrition + "의 섭취량이 100%를 넘었습니다";
+            title = "위험!";
+            body = "현재 " + nutrition + "의 섭취량이 권장량의 100%를 넘었습니다!";
             fcmService.sendNotification(token, title, body);
         } else if (intakePercentage > 0.8) {
             title = "경고!";
-            body = "지금 " + nutrition + "의 섭취량이 80%를 넘었습니다";
+            body = "현재 " + nutrition + "의 섭취량이 권장량의 80%를 넘었습니다!";
             fcmService.sendNotification(token, title, body);
 
         } else if (intakePercentage > 0.5) {
             title = "주의!";
-            body = "지금 " + nutrition + "의 섭취량이 50%를 넘었습니다";
+            body = "현재 " + nutrition + "의 섭취량이 권장량의 50%를 넘었습니다!";
             fcmService.sendNotification(token, title, body);
         }
     }

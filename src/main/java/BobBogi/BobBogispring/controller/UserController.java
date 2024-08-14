@@ -279,12 +279,19 @@ public class UserController {
     @DeleteMapping("/deleteweight")
     @ResponseBody
     public void deleteweight(@RequestParam(name = "id")Long id, @RequestParam(name = "recommendation")boolean recommendation){
-        Long userId = userService.DeleteUserWeight(id);
-        List<User> user = userService.findOne(userId);
-        int size = user.size();
-        if(user.get(size-1).getKey()<id && recommendation){
-            RecommendationNutrition nutrition = RecommendationNutritionCalculator(user.get(size-1));
-            recommendationService.updateOne(userId, nutrition);
+        User user = userService.DeleteUserWeight(id);
+        List<User> userlist = userService.findOne(user.getId());
+        int size = userlist.size();
+        if(userlist.get(size-1).getKey()<id && recommendation){
+            User temp = userlist.get(size-1);
+            temp.setAge(user.getAge());
+            temp.setDisease(user.getDisease());
+            temp.setHeight(user.getHeight());
+            temp.setGender(user.getGender());
+            temp.setName(user.getName());
+            userService.updateOne(temp.getKey(),temp);
+            RecommendationNutrition nutrition = RecommendationNutritionCalculator(temp);
+            recommendationService.updateOne(temp.getId(), nutrition);
         }
     }
 
@@ -310,42 +317,43 @@ public class UserController {
         }else{
             BMR = (447.593+(9.247*user.getWeight())+(3.098*user.getHeight())-(user.getAge()*4.339))*1.35;
         }
-        BMR = (double)round(BMR);
-        Double Temp_carbo = (double) round((BMR*0.55)/4);
-        Double Temp_protein = (double) round(user.getWeight());
-        Double Temp_fat = (double) round((BMR*0.275)/9);
-        Double Temp_sugar = (double) round((BMR*0.1)/4);
-        Double Temp_satfat = (double) round((BMR*0.1)/9);
+        BMR = (double) round(BMR*10.0)/10.0;
+        Double Temp_carbo = (double) round(((BMR*0.55)/4)*10.0)/10.0;
+        Double Temp_protein = user.getWeight();
+        Double Temp_fat = (double) round(((BMR*0.275)/9)*10.0)/10.0;
+        Double Temp_sugar = (double) round(((BMR*0.1)/4)*10.0)/10.0;
+        Double Temp_satfat = (double) round(((BMR*0.1)/9)*10.0)/10.0;
+        Double Temp_transfat = (double) round(((BMR*0.01)/9)*10.0)/10.0;
         if(user.getDisease().equals("null")) {
             nutrition.setKcal(BMR);
             nutrition.setCarbohydrate(Temp_carbo);
             nutrition.setSugar(Temp_sugar);
             nutrition.setProtein(Temp_protein);
             nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(1D);
+            nutrition.setTransfat(Temp_transfat);
             nutrition.setSaturatedfat(Temp_satfat);
             nutrition.setCholesterol(300D);
-            nutrition.setNatrium(2000D);
+            nutrition.setNatrium(2300D);
         }else if(user.getDisease().equals("diabetes")){
-            nutrition.setKcal(BMR*0.7);
-            nutrition.setCarbohydrate(Temp_carbo);
-            nutrition.setSugar(Temp_sugar/4);
+            nutrition.setKcal((double) round(BMR*0.85*10.0)/10.0);
+            nutrition.setCarbohydrate((double) round(((BMR*0.85*0.45)/4)*10.0)/10.0);
+            nutrition.setSugar((double) round(Temp_sugar*0.85*0.55*10.0)/10.0);
             nutrition.setProtein(Temp_protein);
-            nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(0.5D);
-            nutrition.setSaturatedfat(Temp_satfat);
-            nutrition.setCholesterol(300D);
-            nutrition.setNatrium(2000D);
-        }else if(user.getDisease().equals("highbloodpressure")) {
-            nutrition.setKcal(BMR*0.7);
-            nutrition.setCarbohydrate(Temp_carbo);
-            nutrition.setSugar(Temp_sugar);
-            nutrition.setProtein(Temp_protein);
-            nutrition.setFat(Temp_fat);
-            nutrition.setTransfat(0.5D);
-            nutrition.setSaturatedfat((double)round(BMR*0.005));
+            nutrition.setFat((double) round(Temp_fat*0.85*10.0)/10.0);
+            nutrition.setTransfat((double) round(Temp_transfat*0.85*0.7*10.0)/10.0);
+            nutrition.setSaturatedfat((double) round(Temp_satfat*0.85*0.7*10.0)/10.0);
             nutrition.setCholesterol(200D);
-            nutrition.setNatrium(1000D);
+            nutrition.setNatrium(2300D);
+        }else if(user.getDisease().equals("highbloodpressure")) {
+            nutrition.setKcal((double) round(BMR*0.85*10.0)/10.0);
+            nutrition.setCarbohydrate((double) round(Temp_carbo*0.85*10.0)/10.0);
+            nutrition.setSugar((double) round(Temp_sugar*0.85*10.0)/10.0);
+            nutrition.setProtein(Temp_protein);
+            nutrition.setFat((double) round(Temp_fat*0.85*10.0)/10.0);
+            nutrition.setTransfat((double) round(Temp_transfat*0.85*0.7*10.0)/10.0);
+            nutrition.setSaturatedfat((double) round(Temp_satfat*0.85*0.7*10.0)/10.0);
+            nutrition.setCholesterol(200D);
+            nutrition.setNatrium(1500D);
         }
         return nutrition;
     }

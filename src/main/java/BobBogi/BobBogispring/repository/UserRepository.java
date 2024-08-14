@@ -8,5 +8,5 @@ public interface UserRepository {
     void save(User user);
     List<User> findById(Long id);
     public Long update(Long id, Double weight);
-    public Long delete(Long id);
+    public User delete(Long id);
 }
